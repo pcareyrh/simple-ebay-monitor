@@ -1,0 +1,30 @@
+{% if error %}
+    <article style="background: #fdecea;">
+        <strong style="color: #b71c1c;">Preview failed:</strong> {{ error }}
+    </article>
+{% elif items %}
+    <h4>Preview — first {{ items | length }} results</h4>
+    <table>
+        <thead>
+            <tr><th></th><th>Title</th><th>Price</th><th>Condition</th></tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+            <tr>
+                <td>
+                    {% if item.image_url %}<img src="{{ item.image_url }}" alt="" class="thumb">{% endif %}
+                </td>
+                <td><a href="{{ item.item_url }}" target="_blank" rel="noopener">{{ item.title }}</a></td>
+                <td>
+                    {% if item.price is not none %}
+                        {{ "%.2f"|format(item.price) }} {{ item.currency }}
+                    {% else %}—{% endif %}
+                </td>
+                <td>{{ item.condition or "—" }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <article><p>No results found for this query.</p></article>
+{% endif %}

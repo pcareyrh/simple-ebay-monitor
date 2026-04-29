@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — eBay Monitor{% endblock %}
+
+{% block header_extra %}
+    <span class="usage-pill">API calls today: {{ api_calls_today }} / {{ api_call_limit }}</span>
+{% endblock %}
+
+{% block content %}
+<section>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Saved searches</h3>
+        <a href="/searches/new" role="button">+ New search</a>
+    </div>
+
+    {% if rows %}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Query</th>
+                <th>Interval</th>
+                <th>Last run</th>
+                <th>Next run</th>
+                <th>New</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td><a href="/searches/{{ row.search.id }}"><strong>{{ row.search.name }}</strong></a></td>
+                <td><code>{{ row.search.query }}</code></td>
+                <td>{{ row.search.interval_minutes }}m</td>
+                <td class="muted">{{ row.search.last_run_at | fmtdt }}</td>
+                <td class="muted">{{ row.next_run | fmtdt }}</td>
+                <td><strong>{{ row.new_count }}</strong></td>
+                <td>
+                    {% if row.search.enabled %}
+                        <span style="color: #0a7f2e;">● enabled</span>
+                    {% else %}
+                        <span class="muted">○ paused</span>
+                    {% endif %}
+                    {% if row.search.last_error %}
+                        <br><span class="muted" title="{{ row.search.last_error }}" style="color: #b71c1c;">⚠ error</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="actions">
+                        <form class="inline-form" method="post" action="/searches/{{ row.search.id }}/run">
+                            <button type="submit" class="secondary">Run</button>
+                        </form>
+                        <form class="inline-form" method="post" action="/searches/{{ row.search.id }}/toggle">
+                            <button type="submit" class="secondary outline">
+                                {% if row.search.enabled %}Pause{% else %}Resume{% endif %}
+                            </button>
+                        </form>
+                        <a href="/searches/{{ row.search.id }}/edit" role="button" class="secondary outline">Edit</a>
+                        <form class="inline-form" method="post" action="/searches/{{ row.search.id }}/delete"
+                              onsubmit="return confirm('Delete this search and all its results?');">
+                            <button type="submit" class="contrast outline">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <article>
+            <p>No searches yet. <a href="/searches/new">Create your first search</a> to start monitoring eBay.</p>
+        </article>
+    {% endif %}
+</section>
+{% endblock %}

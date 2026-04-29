@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ search.name }} — eBay Monitor{% endblock %}
+
+{% block header_extra %}
+    <a href="/" class="secondary">← Dashboard</a>
+{% endblock %}
+
+{% block content %}
+<section>
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <div>
+            <h3 style="margin-bottom: 0;">{{ search.name }}</h3>
+            <p class="muted" style="margin-top: 4px;">
+                <code>{{ search.query }}</code>
+                · every {{ search.interval_minutes }}m
+                · last run {{ search.last_run_at | fmtdt }}
+                {% if next_run %}· next run {{ next_run | fmtdt }}{% endif %}
+            </p>
+            {% if search.last_error %}
+                <article style="background: #fdecea; padding: 8px 12px; margin: 8px 0;">
+                    <strong style="color: #b71c1c;">Last run failed:</strong> <span>{{ search.last_error }}</span>
+                </article>
+            {% endif %}
+        </div>
+        <div class="actions">
+            <form class="inline-form" method="post" action="/searches/{{ search.id }}/run">
+                <button type="submit">Run now</button>
+            </form>
+            <a href="/searches/{{ search.id }}/edit" role="button" class="secondary outline">Edit</a>
+        </div>
+    </div>
+
+    {% if results %}
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th>Title</th>
+                <th>Price</th>
+                <th>Condition</th>
+                <th>Type</th>
+                <th>Time left</th>
+                <th>Seller</th>
+                <th>First seen</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for item in results %}
+            {% set r = item.r %}
+            <tr id="result-{{ r.id }}" class="result-row">
+                <td>
+                    {% if r.image_url %}
+                        <img src="{{ r.image_url }}" alt="" class="thumb">
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ r.item_url }}" target="_blank" rel="noopener">{{ r.title }}</a>
+                </td>
+                <td>
+                    {% if r.buying_option == "AUCTION" and r.current_bid is not none %}
+                        <strong>{{ "%.2f"|format(r.current_bid) }} {{ r.currency }}</strong>
+                        {% if r.bid_count is not none %}<br><span class="muted">{{ r.bid_count }} bid{% if r.bid_count != 1 %}s{% endif %}</span>{% endif %}
+                    {% elif r.price is not none %}
+                        <strong>{{ "%.2f"|format(r.price) }} {{ r.currency }}</strong>
+                        {% if item.first_price is not none and item.first_price != r.price %}
+                            {% if r.price < item.first_price %}
+                                <br><span class="price-down">↓ from {{ "%.2f"|format(item.first_price) }}</span>
+                            {% else %}
+                                <br><span class="price-up">↑ from {{ "%.2f"|format(item.first_price) }}</span>
+                            {% endif %}
+                        {% endif %}
+                        {% if r.shipping_cost is not none and r.shipping_cost > 0 %}
+                            <br><span class="muted">+ {{ "%.2f"|format(r.shipping_cost) }} ship</span>
+                        {% elif r.shipping_cost == 0 %}
+                            <br><span class="muted">free ship</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="muted">—</span>
+                    {% endif %}
+                </td>
+                <td>{{ r.condition or "—" }}</td>
+                <td>
+                    {% if r.buying_option == "AUCTION" %}
+                        <span class="tag tag-auction">Auction</span>
+                    {% elif r.buying_option == "FIXED_PRICE" %}
+                        <span class="tag tag-bin">Buy Now</span>
+                    {% else %}
+                        <span class="muted">—</span>
+                    {% endif %}
+                </td>
+                <td class="muted">{{ r.end_date | timeleft }}</td>
+                <td class="muted">
+                    {{ r.seller_username or "—" }}
+                    {% if r.seller_feedback_score is not none %}
+                        <br><span>({{ r.seller_feedback_score }})</span>
+                    {% endif %}
+                </td>
+                <td class="muted">{{ r.first_seen_at | fmtdt }}</td>
+                <td>
+                    <div class="actions">
+                        <a href="/results/{{ r.id }}/history" role="button" class="secondary outline">History</a>
+                        <button class="contrast outline"
+                                hx-post="/results/{{ r.id }}/discard"
+                                hx-target="#result-{{ r.id }}"
+                                hx-swap="outerHTML">
+                            Discard
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <article>
+            <p>No unseen results yet. Try <form class="inline-form" method="post" action="/searches/{{ search.id }}/run"><button type="submit" class="secondary">running the search now</button></form>.</p>
+        </article>
+    {% endif %}
+</section>
+{% endblock %}

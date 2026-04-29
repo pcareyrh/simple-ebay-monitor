@@ -1,0 +1,11 @@
+services:
+  ebay-monitor:
+    build: .
+    container_name: ebay-monitor
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data:z
+    env_file:
+      - .env
+    restart: unless-stopped

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{% if search %}Edit{% else %}New{% endif %} search — eBay Monitor{% endblock %}
+
+{% block header_extra %}
+    <a href="/" class="secondary">← Dashboard</a>
+{% endblock %}
+
+{% block content %}
+<section>
+    <h3>{% if search %}Edit search: {{ search.name }}{% else %}New search{% endif %}</h3>
+
+    <form method="post" action="{% if search %}/searches/{{ search.id }}/edit{% else %}/searches{% endif %}">
+        <label>
+            Name
+            <input type="text" name="name" value="{{ form.name }}" required placeholder="e.g. Vintage Nikon lenses">
+        </label>
+
+        <label>
+            Keywords
+            <input type="text" name="query" value="{{ form.query }}" required placeholder="nikon 50mm f1.4 pre-ai">
+        </label>
+
+        <div class="grid">
+            <label>
+                Run interval (minutes)
+                <select name="interval_minutes">
+                    {% for opt in [15, 30, 60, 180, 360, 720, 1440] %}
+                        <option value="{{ opt }}" {% if form.interval_minutes == opt %}selected{% endif %}>
+                            {% if opt < 60 %}{{ opt }} min
+                            {% elif opt == 60 %}1 hour
+                            {% elif opt < 1440 %}{{ opt // 60 }} hours
+                            {% else %}24 hours{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>
+                <input type="checkbox" name="enabled" value="1" {% if form.enabled %}checked{% endif %}>
+                Enabled (run on schedule)
+            </label>
+        </div>
+
+        <details open>
+            <summary><strong>Filters</strong></summary>
+
+            <div class="grid">
+                <label>
+                    Min price
+                    <input type="number" step="0.01" name="price_min" value="{{ form.price_min if form.price_min is not none else '' }}">
+                </label>
+                <label>
+                    Max price
+                    <input type="number" step="0.01" name="price_max" value="{{ form.price_max if form.price_max is not none else '' }}">
+                </label>
+                <label>
+                    Currency
+                    <input type="text" name="price_currency" value="{{ form.price_currency }}" maxlength="3">
+                </label>
+            </div>
+
+            <fieldset>
+                <legend>Condition</legend>
+                {% for cond in ["NEW", "USED", "NEW_OTHER", "CERTIFIED_REFURBISHED", "SELLER_REFURBISHED", "FOR_PARTS_OR_NOT_WORKING"] %}
+                    <label>
+                        <input type="checkbox" name="conditions" value="{{ cond }}"
+                            {% if cond in form.conditions %}checked{% endif %}>
+                        {{ cond.replace("_", " ").title() }}
+                    </label>
+                {% endfor %}
+            </fieldset>
+
+            <fieldset>
+                <legend>Listing type</legend>
+                <label>
+                    <input type="checkbox" name="buying_options" value="FIXED_PRICE"
+                        {% if "FIXED_PRICE" in form.buying_options or not form.buying_options %}checked{% endif %}>
+                    Buy It Now
+                </label>
+                <label>
+                    <input type="checkbox" name="buying_options" value="AUCTION"
+                        {% if "AUCTION" in form.buying_options or not form.buying_options %}checked{% endif %}>
+                    Auction
+                </label>
+                <small class="muted">Leaving both unchecked is treated as "both".</small>
+            </fieldset>
+
+            <label>
+                <input type="checkbox" name="free_shipping" value="1" {% if form.free_shipping %}checked{% endif %}>
+                Free shipping only
+            </label>
+
+            <div class="grid">
+                <label>
+                    Ships from (country code)
+                    <input type="text" name="item_location_country" value="{{ form.item_location_country }}" maxlength="2" placeholder="US">
+                </label>
+                <label>
+                    Ships to (country code)
+                    <input type="text" name="delivery_country" value="{{ form.delivery_country }}" maxlength="2" placeholder="US">
+                </label>
+            </div>
+
+            <label>
+                eBay category IDs (comma separated)
+                <input type="text" name="category_ids" value="{{ form.category_ids }}" placeholder="e.g. 15032, 3323">
+            </label>
+        </details>
+
+        <div style="display: flex; gap: 12px; margin-top: 1rem;">
+            <button type="submit">{% if search %}Save changes{% else %}Create search{% endif %}</button>
+            <button type="button" class="secondary outline"
+                    hx-post="/searches/preview"
+                    hx-include="closest form"
+                    hx-target="#preview-area"
+                    hx-swap="innerHTML">
+                Preview (live eBay sample)
+            </button>
+            <a href="/" role="button" class="contrast outline">Cancel</a>
+        </div>
+    </form>
+
+    <div id="preview-area" style="margin-top: 1.5rem;"></div>
+</section>
+{% endblock %}

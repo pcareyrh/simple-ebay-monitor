@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Price history — {{ result.title }}{% endblock %}
+
+{% block header_extra %}
+    <a href="/searches/{{ result.search_id }}" class="secondary">← Back</a>
+{% endblock %}
+
+{% block content %}
+<section>
+    <h3>Price history</h3>
+    <p><a href="{{ result.item_url }}" target="_blank" rel="noopener">{{ result.title }}</a></p>
+
+    {% if history %}
+    <table>
+        <thead>
+            <tr><th>Recorded at</th><th>Price</th></tr>
+        </thead>
+        <tbody>
+        {% for h in history %}
+            <tr>
+                <td class="muted">{{ h.recorded_at | fmtdt }}</td>
+                <td><strong>{{ "%.2f"|format(h.price) }} {{ h.currency or "" }}</strong></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="muted">No price history recorded yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

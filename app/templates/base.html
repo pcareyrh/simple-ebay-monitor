@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}eBay Monitor{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <style>
+        .thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 4px; }
+        .muted { color: var(--pico-muted-color); font-size: 0.85em; }
+        .price-down { color: #0a7f2e; font-weight: 600; }
+        .price-up { color: #b71c1c; font-weight: 600; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; background: var(--pico-secondary-background); margin-right: 4px; }
+        .tag-auction { background: #ffe082; color: #5d4037; }
+        .tag-bin { background: #c5e1a5; color: #33691e; }
+        .actions { display: flex; gap: 6px; align-items: center; }
+        .actions form { display: inline; margin: 0; }
+        .actions button { padding: 4px 10px; font-size: 0.85em; margin: 0; }
+        table td, table th { vertical-align: middle; padding: 8px 6px; }
+        .inline-form { display: inline; margin: 0; }
+        nav.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .usage-pill { font-size: 0.85em; color: var(--pico-muted-color); }
+        .result-row.discarding { opacity: 0.3; transition: opacity 0.2s; }
+    </style>
+</head>
+<body>
+<main class="container">
+    <nav class="topbar">
+        <h2 style="margin: 0;"><a href="/" style="text-decoration: none; color: inherit;">eBay Monitor</a></h2>
+        {% block header_extra %}{% endblock %}
+    </nav>
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>
