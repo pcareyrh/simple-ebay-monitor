@@ -24,6 +24,9 @@ data/
 # Docs / planning
 PLAN.md
 
+# Nomad job files (contain credentials)
+*.nomad.hcl
+
 # Editor
 .vscode/
 .idea/
